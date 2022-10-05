@@ -1,21 +1,26 @@
+import { Fetcher } from './fetcher.js'
 import type { XWROptions } from './interface.js'
-import type { FetcherFnParams, FetcherKey } from './manger.js'
-import requestManger, { Fetcher } from './manger.js'
+import requestManger from './manger.js'
 import { resolveOptions } from './resolve-options.js'
+import type { FetcherFnParams, FetcherKey } from './types.js'
 
+// TODO
 export function swr<Key extends FetcherKey, RR = any, Result = Promise<RR>>(
   key: Key,
   fetchFn: (options: FetcherFnParams<Key>) => RR | Promise<RR>,
-  options?: XWROptions,
+  options?: Partial<XWROptions>,
 ) {
   const existFetcher = requestManger.getFetcher(key)
 
   if (existFetcher) {
-    return existFetcher.resolve() as Result
+    const nextOptions = resolveOptions(options)
+
+    existFetcher.setOptions(nextOptions)
+    return existFetcher.resolve(fetchFn as any) as Result
   }
 
-  const nextOptions = resolveOptions(options)
   const fetcher = new Fetcher(key)
+  const nextOptions = resolveOptions(options)
   // @ts-ignore
   fetcher.setFetchFn(fetchFn)
   fetcher.setOptions(nextOptions)
