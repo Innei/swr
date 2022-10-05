@@ -8,7 +8,10 @@ export interface ICache {
 }
 
 export interface XWROptions {
+  // cache
   cache: ICache
-}
+  maxAge: number
 
-localStorage
+  retryInterval: number
+  retryMaxCount: number
+}

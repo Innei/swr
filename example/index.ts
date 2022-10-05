@@ -1,7 +1,9 @@
-import { date, test } from '~'
+import { swr } from '~/swr'
 
-import './index.css'
-import 'uno.css'
-
-test()
-console.log(date)
+for (let i = 0; i < 10; i++) {
+  swr('test', () => {
+    return Math.random()
+  }).then((re) => {
+    console.log(re)
+  })
+}
