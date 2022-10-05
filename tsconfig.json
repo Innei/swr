@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "baseUrl": "./",
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ],
+      "~": [
+        "./src"
+      ]
+    },
+    "types": [
+      "vitest/globals"
+    ]
+  }
+}
