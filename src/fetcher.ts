@@ -1,5 +1,6 @@
 import type { XWROptions } from './interface.js'
 import { defaultOptions } from './resolve-options.js'
+import { subscription } from './subscription.js'
 import type { FetchFn, FetcherKey } from './types.js'
 import { resolveKey, sleep } from './utils.js'
 
@@ -37,7 +38,12 @@ export class Fetcher {
 
     // because await will interrupt micro-task so we should set flag first.
     this.isFetching = true
-    const memoizedFetchFn = this.fetchFn.bind(null)
+
+    const memoizedKeys = Array.isArray(this.key) ? [...this.key] : this.key
+
+    const memoizedFetchFn = this.fetchFn.bind(this, {
+      key: memoizedKeys,
+    })
     const fetchingPooling = async () => {
       // this `await` will interrupt microtask so we should set flag after it.
       const hasCache = await this.getCache()
@@ -53,7 +59,7 @@ export class Fetcher {
       let currentRetryCount = 0
 
       const asyncFunction = () =>
-        Promise.resolve().then(() => memoizedFetchFn(this.key as any))
+        Promise.resolve().then(() => memoizedFetchFn())
 
       while (currentRetryCount++ < retryMaxCount) {
         try {
@@ -80,6 +86,7 @@ export class Fetcher {
   private handleResponse = async (response: any) => {
     await this.doCache(response)
 
+    subscription.emit(resolveKey(this.key), response)
     this.isFetching = false
     return response
   }

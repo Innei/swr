@@ -2,10 +2,13 @@ import { Fetcher } from './fetcher.js'
 import type { XWROptions } from './interface.js'
 import requestManger from './manger.js'
 import { resolveOptions } from './resolve-options.js'
+import { subscription } from './subscription.js'
 import type { FetcherFnParams, FetcherKey } from './types.js'
+import { resolveKey } from './utils.js'
 
 type Wrapper<T> = T & {
   refresh: (force?: boolean) => Promise<T>
+  subscribe: (callback: (value: T) => void) => () => void
 }
 // TODO
 export function swr<
@@ -50,6 +53,11 @@ export function swr<
       }
 
       return promise
+    },
+    subscribe(fn: (value: any) => void) {
+      subscription.on(resolveKey(key), (res) => {
+        fn(res)
+      })
     },
   })
   return promise as any as ReuseablePromise

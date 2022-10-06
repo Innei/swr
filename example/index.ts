@@ -110,6 +110,26 @@ async function main() {
       console.log('test-2 refresh', res)
     })
   }, 100)
+
+  const task3 = swr(['test3'], ({ key }) => {
+    console.log(key, 'key', '   test-3')
+    return { message: `test-3, i =${i++}` }
+  })
+
+  task3.subscribe((res) => {
+    console.log('subscribe', res)
+  })
+
+  setTimeout(() => {
+    console.log('refresh 1')
+
+    task3.refresh()
+  }, 100)
+
+  setTimeout(() => {
+    console.log('refresh 2')
+    task3.refresh()
+  }, 200)
 }
 
 main()
