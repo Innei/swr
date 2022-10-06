@@ -16,7 +16,8 @@ export function swr<Key extends FetcherKey, RR = any, Result = Promise<RR>>(
     const nextOptions = resolveOptions(options)
 
     existFetcher.setOptions(nextOptions)
-    return existFetcher.resolve(fetchFn as any) as Result
+    existFetcher.setFetchFn(fetchFn as any)
+    return existFetcher.resolve() as Result
   }
 
   const fetcher = new Fetcher(key)

@@ -32,7 +32,7 @@ async function main() {
   swr(
     ['test'],
     async () => {
-      // await sleep(3000)
+      await sleep(500)
       console.log('call 1')
 
       return 1
@@ -77,13 +77,13 @@ async function main() {
 
         return 2
       },
-      {
-        maxAge: 120,
-      },
+      // {
+      //   maxAge: 120,
+      // },
     ).then((res) => {
       console.log(res, '2 cc')
     })
-  }, 120)
+  }, 550)
 }
 
 main()

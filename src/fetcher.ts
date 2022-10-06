@@ -21,7 +21,7 @@ export class Fetcher {
     this.options = options
   }
 
-  async resolve(nextFetchFn?: FetchFn<FetcherKey, any>) {
+  resolve(nextFetchFn?: FetchFn<FetcherKey, any>) {
     if (this.isFetching) {
       return this.polling
     }
@@ -31,8 +31,18 @@ export class Fetcher {
 
     // because await will interrupt micro-task so we should set flag first.
     this.isFetching = true
+    const memoizedFetchFn = nextFetchFn ?? this.fetchFn.bind(null)
     const fetchingPooling = async () => {
-      const memoizedFetchFn = nextFetchFn ?? this.fetchFn.bind(null)
+      // this `await` will interrupt microtask so we should set flag after it.
+      const hasCache = await this.getCache()
+      if (hasCache) {
+        this.isFetching = false
+        console.log('cache')
+
+        // Promise.race([this.polling, sleep(0)])
+        return hasCache
+      }
+
       const { retryInterval, retryMaxCount } = this.options
       let currentRetryCount = 0
 
@@ -57,16 +67,6 @@ export class Fetcher {
     console.log('start fetch')
 
     this.polling = fetchingPooling()
-
-    // this `await` will interrupt microtask so we should set flag after it.
-    const hasCache = await this.getCache()
-    if (hasCache) {
-      this.isFetching = false
-      console.log('cache')
-
-      Promise.race([this.polling, sleep(0)])
-      return hasCache
-    }
 
     return this.polling
   }
@@ -97,8 +97,7 @@ export class Fetcher {
       return null
     }
     const cacheObj = JSON.parse(cacheStr)
-    console.log('get---', cacheObj[CACHE_EXPIRED_KEY])
-    console.log('xx', Date.now())
+
     if (Date.now() > cacheObj[CACHE_EXPIRED_KEY]) {
       return null
     }
