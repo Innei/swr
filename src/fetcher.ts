@@ -21,8 +21,14 @@ export class Fetcher {
     this.options = options
   }
 
-  resolve(nextFetchFn?: FetchFn<FetcherKey, any>) {
-    if (this.isFetching) {
+  // resolve(nextFetchFn?: FetchFn<FetcherKey, any>) {
+  resolve(
+    options?: Partial<{
+      force: boolean
+    }>,
+  ) {
+    const { force = false } = options || {}
+    if (this.isFetching && !force) {
       return this.polling
     }
     if (!this.fetchFn) {
@@ -31,11 +37,11 @@ export class Fetcher {
 
     // because await will interrupt micro-task so we should set flag first.
     this.isFetching = true
-    const memoizedFetchFn = nextFetchFn ?? this.fetchFn.bind(null)
+    const memoizedFetchFn = this.fetchFn.bind(null)
     const fetchingPooling = async () => {
       // this `await` will interrupt microtask so we should set flag after it.
       const hasCache = await this.getCache()
-      if (hasCache) {
+      if (hasCache && !force) {
         this.isFetching = false
         console.log('cache')
 

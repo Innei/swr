@@ -84,6 +84,32 @@ async function main() {
       console.log(res, '2 cc')
     })
   }, 550)
+  let i = 0
+  const task2 = swr(
+    ['test-2'],
+    async () => {
+      console.log('call test-2')
+
+      return ++i
+    },
+    {
+      maxAge: 0,
+    },
+  )
+  task2.then((res) => {
+    console.log('test-2 done', res)
+  })
+  task2.refresh(true).then((res) => {
+    console.log('test-2 refresh', res)
+  })
+  task2.refresh().then((res) => {
+    console.log('test-2 refresh', res)
+  })
+  setTimeout(() => {
+    task2.refresh().then((res) => {
+      console.log('test-2 refresh', res)
+    })
+  }, 100)
 }
 
 main()
