@@ -1,4 +1,5 @@
 import { defaultCache } from './cache.js'
+import { context } from './context.js'
 import type { XWROptions } from './interface.js'
 
 export const defaultOptions: XWROptions = {
@@ -8,6 +9,9 @@ export const defaultOptions: XWROptions = {
   retryMaxCount: 3,
 }
 
-export const resolveOptions = (options?: Partial<XWROptions>) => {
-  return { ...defaultOptions, ...options }
+export const resolveOptions = (
+  options?: Partial<XWROptions>,
+): Required<XWROptions> => {
+  const { cache } = context
+  return { ...defaultOptions, cache, ...options }
 }
