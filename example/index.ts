@@ -117,7 +117,7 @@ async function main() {
   })
 
   task3.subscribe((res) => {
-    console.log('subscribe', res)
+    console.log('3: subscribe', res)
   })
 
   setTimeout(() => {
@@ -130,6 +130,20 @@ async function main() {
     console.log('refresh 2')
     task3.refresh()
   }, 200)
+
+  const task4 = swr(
+    ['test4'],
+    ({ key }) => {
+      return 'task-4'
+    },
+    {
+      initialData: 'has-inital',
+    },
+  )
+
+  task4.subscribe((res) => {
+    console.log('4: subscribe', res)
+  })
 }
 
 main()

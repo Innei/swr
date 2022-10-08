@@ -1,4 +1,5 @@
 type Subscription = (value: any) => void
+
 export class SubscriptionStatic {
   private subscribers: Map<string, Set<Subscription>> = new Map()
   on = (event: string, callback: Subscription) => {

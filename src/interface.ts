@@ -7,11 +7,13 @@ export interface ICache {
   clear(): any
 }
 
-export interface XWROptions {
+export interface SWROptions {
   // cache
   cache: ICache
   maxAge: number
 
   retryInterval: number
   retryMaxCount: number
+
+  initialData: any
 }

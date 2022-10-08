@@ -1,10 +1,24 @@
-import type { XWROptions } from './interface.js'
+import type { SWROptions } from './interface.js'
 import { defaultOptions } from './resolve-options.js'
 import { subscription } from './subscription.js'
 import type { FetchFn, FetcherKey } from './types.js'
 import { cloneDeep, resolveKey, sleep } from './utils.js'
 
 const CACHE_EXPIRED_KEY = '__cache_expired__'
+
+interface FetcherState {
+  data: any | null
+  error: any | null
+  isValidating: boolean
+  lastUpdatedAt: number
+}
+
+const defaultFetcherState: FetcherState = {
+  data: null,
+  error: null,
+  isValidating: false,
+  lastUpdatedAt: 0,
+}
 
 export class Fetcher {
   private fetchFn: FetchFn<FetcherKey, any> = () => void 0
@@ -13,10 +27,7 @@ export class Fetcher {
 
   private polling: Promise<any> = Promise.resolve()
 
-  /**
-   * 上一个请求
-   */
-  private cachedData: any = null
+  private state: FetcherState = defaultFetcherState
 
   constructor(private readonly key: FetcherKey) {}
 
@@ -24,11 +35,10 @@ export class Fetcher {
     this.fetchFn = fetchFn
   }
 
-  setOptions = (options: Required<XWROptions>) => {
+  setOptions = (options: Required<SWROptions>) => {
     this.options = options
   }
 
-  // resolve(nextFetchFn?: FetchFn<FetcherKey, any>) {
   resolve(
     options?: Partial<{
       force: boolean
@@ -62,7 +72,7 @@ export class Fetcher {
       }
 
       // FIXME
-      this.emitResponse('loading', this.cachedData)
+      this.emitResponse('loading', this.state.data)
 
       const { retryInterval, retryMaxCount } = this.options
       let currentRetryCount = 0
@@ -111,7 +121,8 @@ export class Fetcher {
     const clonedResponse = cloneDeep(response)
     this.emitResponse('success', clonedResponse)
     this.isFetching = false
-    this.cachedData = response
+    this.state.data = clonedResponse
+    this.state.lastUpdatedAt = +Date.now()
 
     return clonedResponse
   }

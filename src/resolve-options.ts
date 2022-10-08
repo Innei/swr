@@ -1,17 +1,18 @@
 import { defaultCache } from './cache.js'
-import { context } from './context.js'
-import type { XWROptions } from './interface.js'
+import { configureConfig } from './configure.js'
+import type { SWROptions } from './interface.js'
 
-export const defaultOptions: XWROptions = {
+export const defaultOptions: SWROptions = {
   cache: defaultCache,
   maxAge: 0,
   retryInterval: 1000,
   retryMaxCount: 3,
+
+  initialData: null,
 }
 
 export const resolveOptions = (
-  options?: Partial<XWROptions>,
-): Required<XWROptions> => {
-  const { cache } = context
-  return { ...defaultOptions, cache, ...options }
+  options?: Partial<SWROptions>,
+): Required<SWROptions> => {
+  return { ...defaultOptions, ...configureConfig, ...options }
 }

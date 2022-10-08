@@ -1,14 +1,16 @@
 import { Fetcher } from './fetcher.js'
-import type { XWROptions } from './interface.js'
+import type { SWROptions } from './interface.js'
 import requestManger from './manger.js'
 import { resolveOptions } from './resolve-options.js'
 import { subscription } from './subscription.js'
 import type { FetcherFnParams, FetcherKey } from './types.js'
 import { resolveKey } from './utils.js'
 
+type Disposer = () => void
+
 type Wrapper<T> = T & {
   refresh: (force?: boolean) => Promise<T>
-  subscribe: (callback: (value: T) => void) => () => void
+  subscribe: (callback: (value: T) => void) => Disposer
 }
 // TODO
 export function swr<
@@ -19,7 +21,7 @@ export function swr<
 >(
   key: Key,
   fetchFn: (options: FetcherFnParams<Key>) => RR | Promise<RR>,
-  options?: Partial<XWROptions>,
+  options?: Partial<SWROptions>,
 ): ReuseablePromise {
   const promise: Result = (() => {
     const existFetcher = requestManger.getFetcher(key)
@@ -40,7 +42,9 @@ export function swr<
 
     requestManger.addFetcher(key, fetcher)
 
-    return fetcher.resolve() as Result
+    const { initialData } = nextOptions
+
+    return Promise.resolve(initialData) ?? (fetcher.resolve() as Result)
   })()
 
   Object.assign(promise as any, {
@@ -55,7 +59,7 @@ export function swr<
       return promise
     },
     subscribe(fn: (value: any) => void) {
-      subscription.on(resolveKey(key), (res) => {
+      return subscription.on(resolveKey(key), (res) => {
         fn(res)
       })
     },
