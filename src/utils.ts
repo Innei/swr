@@ -15,3 +15,7 @@ export const resolveKey = (key: FetcherKey): string => {
     return `${pre}${separator}${cur}`
   }, '')
 }
+
+export const cloneDeep = (obj: any) => {
+  return JSON.parse(JSON.stringify(obj))
+}

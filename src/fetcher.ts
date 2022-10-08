@@ -2,7 +2,7 @@ import type { XWROptions } from './interface.js'
 import { defaultOptions } from './resolve-options.js'
 import { subscription } from './subscription.js'
 import type { FetchFn, FetcherKey } from './types.js'
-import { resolveKey, sleep } from './utils.js'
+import { cloneDeep, resolveKey, sleep } from './utils.js'
 
 const CACHE_EXPIRED_KEY = '__cache_expired__'
 
@@ -12,6 +12,12 @@ export class Fetcher {
   private isFetching = false
 
   private polling: Promise<any> = Promise.resolve()
+
+  /**
+   * 上一个请求
+   */
+  private cachedData: any = null
+
   constructor(private readonly key: FetcherKey) {}
 
   setFetchFn<T = any>(fetchFn: FetchFn<FetcherKey, T>) {
@@ -51,9 +57,12 @@ export class Fetcher {
         this.isFetching = false
         console.log('cache')
 
-        // Promise.race([this.polling, sleep(0)])
+        this.emitResponse('success', hasCache)
         return hasCache
       }
+
+      // FIXME
+      this.emitResponse('loading', this.cachedData)
 
       const { retryInterval, retryMaxCount } = this.options
       let currentRetryCount = 0
@@ -67,6 +76,7 @@ export class Fetcher {
         } catch (error) {
           if (currentRetryCount === retryMaxCount) {
             this.isFetching = false
+            this.emitResponse('error', null, error)
             throw error
           }
           console.log(`retrying... ${currentRetryCount}`)
@@ -83,18 +93,33 @@ export class Fetcher {
     return this.polling
   }
 
+  private emitResponse(
+    status: 'success' | 'error' | 'loading',
+    data: any,
+    error?: any,
+  ) {
+    subscription.emit(resolveKey(this.key), {
+      data,
+      status,
+      error,
+    })
+  }
+
   private handleResponse = async (response: any) => {
     await this.doCache(response)
 
-    subscription.emit(resolveKey(this.key), response)
+    const clonedResponse = cloneDeep(response)
+    this.emitResponse('success', clonedResponse)
     this.isFetching = false
-    return response
+    this.cachedData = response
+
+    return clonedResponse
   }
 
   private doCache = async (response: any) => {
     const { cache, maxAge } = this.options
 
-    cache.set(
+    return cache.set(
       resolveKey(this.key),
       JSON.stringify({
         data: response,
