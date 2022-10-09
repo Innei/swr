@@ -23,3 +23,10 @@ export const cloneDeep = (obj: any) => {
 export const isDefined = (obj: any) => {
   return obj !== null && obj !== undefined
 }
+
+export class SWRError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'SWRError'
+  }
+}

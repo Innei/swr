@@ -12,7 +12,11 @@ export default defineConfig({
       ],
     }),
   ],
+  define: {
+    __DEV__: process.env.NODE_ENV !== 'production',
+  },
   root: resolve(__dirname, './example'),
+
   build: {
     rollupOptions: {
       input: {

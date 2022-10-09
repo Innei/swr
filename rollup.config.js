@@ -96,7 +96,8 @@ const config = [
         jsxFactory: 'React.createElement',
         jsxFragment: 'React.Fragment',
         define: {
-          __VERSION__: '"x.y.z"',
+          // @ts-ignore
+          __DEV__: process.env.NODE_ENV !== 'production',
         },
         tsconfig: './src/tsconfig.json',
         loaders: {

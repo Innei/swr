@@ -1,8 +1,9 @@
 import type { SWROptions } from './interface.js'
+import { Logger } from './logger.js'
 import { defaultOptions } from './resolve-options.js'
 import { subscription } from './subscription.js'
 import type { FetchFn, FetcherKey } from './types.js'
-import { cloneDeep, resolveKey, sleep } from './utils.js'
+import { SWRError, cloneDeep, resolveKey, sleep } from './utils.js'
 
 const CACHE_EXPIRED_KEY = '__cache_expired__'
 
@@ -46,13 +47,15 @@ export class Fetcher {
   ) {
     const { force = false } = options || {}
     if (this.isFetching && !force) {
+      Logger.warn(
+        'previous request still in fetching, this fetching will skip..',
+      )
       return this.polling
     }
     if (!this.fetchFn) {
-      throw new Error('fetchFn is not set')
+      throw new SWRError('missing fetch function')
     }
 
-    // because await will interrupt micro-task so we should set flag first.
     this.isFetching = true
 
     const memoizedKeys = Array.isArray(this.key) ? [...this.key] : this.key
@@ -61,11 +64,10 @@ export class Fetcher {
       key: memoizedKeys,
     })
     const fetchingPooling = async () => {
-      // this `await` will interrupt microtask so we should set flag after it.
       const hasCache = await this.getCache()
       if (hasCache && !force) {
         this.isFetching = false
-        console.log('cache')
+        Logger.debug('cache hit, this request will fetch from cache.')
 
         this.emitResponse('success', hasCache)
         return hasCache
@@ -90,14 +92,14 @@ export class Fetcher {
             this.emitResponse('error', null, error)
             throw error
           }
-          console.log(`retrying... ${currentRetryCount}`)
+          Logger.warn(`retrying... ${currentRetryCount}`)
 
           await sleep(retryInterval)
         }
       }
     }
 
-    console.log('start fetch')
+    Logger.debug('start fetch')
 
     this.polling = fetchingPooling()
 
