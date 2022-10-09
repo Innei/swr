@@ -123,11 +123,11 @@ export class Fetcher {
     await this.doCache(response)
 
     const clonedResponse = cloneDeep(response)
-    this.emitResponse('success', clonedResponse)
     this.isFetching = false
     this.state.data = clonedResponse
     this.state.lastUpdatedAt = +Date.now()
 
+    this.emitResponse('success', clonedResponse)
     return clonedResponse
   }
 

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 
 import { Fetcher } from './fetcher.js'
+import { useSafeSetState } from './hooks/use-safe-setState.js'
 import type {
   FetcherStatus,
   ISubscriptionEmit,
@@ -21,20 +22,25 @@ import { resolveKey } from './utils.js'
 
 // TODO:
 // - [ ] error handle
-export function useSWR<Key extends FetcherKey, RR = any, Result = Promise<RR>>(
+export function useSWR<Key extends FetcherKey, RR = any>(
   key: Key,
   fetchFn: (options: FetcherFnParams<Key>) => RR | Promise<RR>,
   options?: Partial<SWROptions>,
 ) {
   const nextOptions = resolveOptions(options)
-  const [data, setData] = useState(nextOptions.initialData ?? null)
-  const [status, setStatus] = useState<FetcherStatus>('loading')
+
+  const [state, setState] = useState({
+    data: nextOptions.initialData ?? (null as RR | null),
+    error: null as any,
+    status: 'loading' as FetcherStatus,
+  })
+
+  const setSafeState = useSafeSetState(setState)
+
   const promiseRef = useRef<Promise<any>>()
-
-  const isInitialRef = useRef(false)
   const fetcherRef = useRef<Fetcher>()
-
   const lastUpdateAtRef = useRef(0)
+  const isInitialRef = useRef(false)
 
   if (!promiseRef.current && !isInitialRef.current) {
     let fetcher = requestManager.getFetcher(key)
@@ -59,20 +65,28 @@ export function useSWR<Key extends FetcherKey, RR = any, Result = Promise<RR>>(
 
   if (!isInitialRef.current) {
     promiseRef.current?.then((re) => {
-      setData(re)
+      setSafeState((state) => ({
+        ...state,
+        data: re,
+      }))
     })
 
     subscription.on(resolveKey(key), (event: ISubscriptionEmit) => {
       const { data, status, lastUpdatedAt } = event
 
-      setData(data)
-      setStatus(status)
+      setSafeState((state) => ({
+        ...state,
+        data,
+        status,
+      }))
+
       lastUpdateAtRef.current = lastUpdatedAt
     })
   }
 
   isInitialRef.current = true
 
+  const { data, status } = state
   return {
     data,
     isSuccess: status === 'success',
