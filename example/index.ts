@@ -1,4 +1,9 @@
+import React from 'react'
+import ReactDom from 'react-dom'
+
 import { swr } from '~/swr'
+
+import App from './App'
 
 const fetchFn = async () => {
   const re = await swr(['test'], () => {
@@ -150,3 +155,6 @@ async function main() {
 }
 
 main()
+const $App = document.getElementById('app')!
+
+ReactDom.render(React.createElement(App), $App)

@@ -1,4 +1,5 @@
 type JSONString = string
+
 export interface ICache {
   get(key: string): any
   set(key: string, value: JSONString): any
@@ -16,4 +17,13 @@ export interface SWROptions {
   retryMaxCount: number
 
   initialData: any
+}
+
+export type FetcherStatus = 'success' | 'error' | 'loading'
+
+export interface ISubscriptionEmit {
+  data: any
+  lastUpdatedAt: number
+  status: FetcherStatus
+  error?: any
 }

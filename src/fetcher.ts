@@ -1,4 +1,8 @@
-import type { SWROptions } from './interface.js'
+import type {
+  FetcherStatus,
+  ISubscriptionEmit,
+  SWROptions,
+} from './interface.js'
 import { Logger } from './logger.js'
 import { defaultOptions } from './resolve-options.js'
 import { subscription } from './subscription.js'
@@ -106,16 +110,13 @@ export class Fetcher {
     return this.polling
   }
 
-  private emitResponse(
-    status: 'success' | 'error' | 'loading',
-    data: any,
-    error?: any,
-  ) {
+  private emitResponse(status: FetcherStatus, data: any, error?: any) {
     subscription.emit(resolveKey(this.key), {
       data,
       status,
       error,
-    })
+      lastUpdatedAt: this.state.lastUpdatedAt,
+    } as ISubscriptionEmit)
   }
 
   private handleResponse = async (response: any) => {
