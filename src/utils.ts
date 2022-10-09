@@ -19,3 +19,7 @@ export const resolveKey = (key: FetcherKey): string => {
 export const cloneDeep = (obj: any) => {
   return JSON.parse(JSON.stringify(obj))
 }
+
+export const isDefined = (obj: any) => {
+  return obj !== null && obj !== undefined
+}

@@ -4,7 +4,7 @@ import requestManger from './manger.js'
 import { resolveOptions } from './resolve-options.js'
 import { subscription } from './subscription.js'
 import type { FetcherFnParams, FetcherKey } from './types.js'
-import { resolveKey } from './utils.js'
+import { isDefined, resolveKey } from './utils.js'
 
 type Disposer = () => void
 
@@ -44,7 +44,12 @@ export function swr<
 
     const { initialData } = nextOptions
 
-    return Promise.resolve(initialData) ?? (fetcher.resolve() as Result)
+    return isDefined(initialData)
+      ? (Promise.resolve(initialData).then((res) => {
+          fetcher.resolve({ force: true })
+          return res
+        }) as Result)
+      : (fetcher.resolve() as Result)
   })()
 
   Object.assign(promise as any, {

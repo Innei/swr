@@ -72,9 +72,10 @@ export class Fetcher {
       }
 
       // FIXME
-      this.emitResponse('loading', this.state.data)
 
-      const { retryInterval, retryMaxCount } = this.options
+      const { retryInterval, retryMaxCount, initialData } = this.options
+      this.emitResponse('loading', this.state.data ?? initialData)
+
       let currentRetryCount = 0
 
       const asyncFunction = () =>
