@@ -1,10 +1,11 @@
-import { Fetcher } from './fetcher.js'
+import { resolveOptions } from './_internal/resolve-options.js'
+import { subscription } from './_internal/subscription.js'
+import { isDefined } from './_internal/utils/helper.js'
+import { serializeKey } from './_internal/utils/serialize.js'
+import { Fetcher } from './core/fetcher.js'
+import requestManger from './core/manger.js'
 import type { SWROptions } from './interface.js'
-import requestManger from './manger.js'
-import { resolveOptions } from './resolve-options.js'
-import { subscription } from './subscription.js'
-import type { FetcherFnParams, FetcherKey } from './types.js'
-import { isDefined, resolveKey } from './utils.js'
+import type { FetcherFnParams, SWRKey } from './types.js'
 
 type Disposer = () => void
 
@@ -14,7 +15,7 @@ type Wrapper<T> = T & {
 }
 // TODO
 export function swr<
-  Key extends FetcherKey,
+  Key extends SWRKey,
   RR = any,
   Result = Promise<RR>,
   ReuseablePromise = Wrapper<Result>,
@@ -64,7 +65,7 @@ export function swr<
       return promise
     },
     subscribe(fn: (value: any) => void) {
-      return subscription.on(resolveKey(key), (res) => {
+      return subscription.on(serializeKey(key), (res) => {
         fn(res)
       })
     },

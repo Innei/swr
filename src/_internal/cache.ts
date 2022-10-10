@@ -1,4 +1,4 @@
-import type { ICache } from './interface.js'
+import type { ICache } from '../interface.js'
 
 class InMemoryCache implements ICache {
   private cache: { [key: string]: string } = {}

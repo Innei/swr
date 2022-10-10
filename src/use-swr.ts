@@ -1,17 +1,17 @@
 import { useRef, useState } from 'react'
 
-import { Fetcher } from './fetcher.js'
+import { resolveOptions } from './_internal/resolve-options.js'
+import { subscription } from './_internal/subscription.js'
+import { serializeKey } from './_internal/utils/serialize.js'
+import { Fetcher } from './core/fetcher.js'
+import requestManager from './core/manger.js'
 import { useSafeSetState } from './hooks/use-safe-setState.js'
 import type {
   FetcherStatus,
   ISubscriptionEmit,
   SWROptions,
 } from './interface.js'
-import requestManager from './manger.js'
-import { resolveOptions } from './resolve-options.js'
-import { subscription } from './subscription.js'
-import type { FetcherFnParams, FetcherKey } from './types.js'
-import { resolveKey } from './utils.js'
+import type { FetcherFnParams, SWRKey } from './types.js'
 
 // TODO:
 // - if key changed
@@ -22,7 +22,7 @@ import { resolveKey } from './utils.js'
 
 // TODO:
 // - [ ] error handle
-export function useSWR<Key extends FetcherKey, RR = any>(
+export function useSWR<Key extends SWRKey, RR = any>(
   key: Key,
   fetchFn: (options: FetcherFnParams<Key>) => RR | Promise<RR>,
   options?: Partial<SWROptions>,
@@ -71,7 +71,7 @@ export function useSWR<Key extends FetcherKey, RR = any>(
       }))
     })
 
-    subscription.on(resolveKey(key), (event: ISubscriptionEmit) => {
+    subscription.on(serializeKey(key), (event: ISubscriptionEmit) => {
       const { data, status, lastUpdatedAt } = event
 
       setSafeState((state) => ({

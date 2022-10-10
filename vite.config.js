@@ -12,6 +12,11 @@ export default defineConfig({
       ],
     }),
   ],
+  resolve: {
+    alias: {
+      '~/_internal': resolve(__dirname, './src/_internal'),
+    },
+  },
   define: {
     __DEV__: process.env.NODE_ENV !== 'production',
   },

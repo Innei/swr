@@ -1,6 +1,6 @@
+import { configureConfig } from '../configure.js'
+import type { SWROptions } from '../interface.js'
 import { defaultCache } from './cache.js'
-import { configureConfig } from './configure.js'
-import type { SWROptions } from './interface.js'
 
 export const defaultOptions: SWROptions = {
   cache: defaultCache,

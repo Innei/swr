@@ -1,18 +1,19 @@
+import { serializeKey } from '~/_internal/utils/serialize.js'
+
+import type { SWRKey } from '../types.js'
 import type { Fetcher } from './fetcher.js'
-import type { FetcherKey } from './types.js'
-import { resolveKey } from './utils.js'
 
 class RequestMangerStatic {
   private fetchers: { [key: string]: Fetcher } = {}
 
-  getFetcher(key: FetcherKey): Fetcher {
-    const nextKey = resolveKey(key)
+  getFetcher(key: SWRKey): Fetcher {
+    const nextKey = serializeKey(key)
     const fetcher = this.fetchers[nextKey]
     return fetcher
   }
 
-  addFetcher(key: FetcherKey, fetcher: Fetcher) {
-    const nextKey = resolveKey(key)
+  addFetcher(key: SWRKey, fetcher: Fetcher) {
+    const nextKey = serializeKey(key)
     this.fetchers[nextKey] = fetcher
   }
 }

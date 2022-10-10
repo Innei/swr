@@ -1,13 +1,16 @@
+import { SWRError } from '~/_internal/utils/error.js'
+import { cloneDeep, sleep } from '~/_internal/utils/helper.js'
+import { serializeKey } from '~/_internal/utils/serialize.js'
+
+import { Logger } from '../_internal/logger.js'
+import { defaultOptions } from '../_internal/resolve-options.js'
+import { subscription } from '../_internal/subscription.js'
 import type {
   FetcherStatus,
   ISubscriptionEmit,
   SWROptions,
-} from './interface.js'
-import { Logger } from './logger.js'
-import { defaultOptions } from './resolve-options.js'
-import { subscription } from './subscription.js'
-import type { FetchFn, FetcherKey } from './types.js'
-import { SWRError, cloneDeep, resolveKey, sleep } from './utils.js'
+} from '../interface.js'
+import type { FetchFn, SWRKey } from '../types.js'
 
 const CACHE_EXPIRED_KEY = '__cache_expired__'
 
@@ -26,7 +29,7 @@ const defaultFetcherState: FetcherState = {
 }
 
 export class Fetcher {
-  private fetchFn: FetchFn<FetcherKey, any> = () => void 0
+  private fetchFn: FetchFn<SWRKey, any> = () => void 0
   private options = defaultOptions
   private isFetching = false
 
@@ -34,9 +37,9 @@ export class Fetcher {
 
   private state: FetcherState = defaultFetcherState
 
-  constructor(private readonly key: FetcherKey) {}
+  constructor(private readonly key: SWRKey) {}
 
-  setFetchFn<T = any>(fetchFn: FetchFn<FetcherKey, T>) {
+  setFetchFn<T = any>(fetchFn: FetchFn<SWRKey, T>) {
     this.fetchFn = fetchFn
   }
 
@@ -111,7 +114,7 @@ export class Fetcher {
   }
 
   private emitResponse(status: FetcherStatus, data: any, error?: any) {
-    subscription.emit(resolveKey(this.key), {
+    subscription.emit(serializeKey(this.key), {
       data,
       status,
       error,
@@ -135,7 +138,7 @@ export class Fetcher {
     const { cache, maxAge } = this.options
 
     return cache.set(
-      resolveKey(this.key),
+      serializeKey(this.key),
       JSON.stringify({
         data: response,
         [CACHE_EXPIRED_KEY]: Date.now() + maxAge,
@@ -145,7 +148,7 @@ export class Fetcher {
 
   private getCache = async () => {
     const { cache } = this.options
-    const cacheStr = await cache.get(resolveKey(this.key))
+    const cacheStr = await cache.get(serializeKey(this.key))
     if (!cacheStr) {
       return null
     }
