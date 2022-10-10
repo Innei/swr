@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { resolveOptions } from './_internal/resolve-options.js'
 import { subscription } from './_internal/subscription.js'
@@ -41,6 +41,7 @@ export function useSWR<Key extends SWRKey, RR = any>(
   const fetcherRef = useRef<Fetcher>()
   const lastUpdateAtRef = useRef(0)
   const isInitialRef = useRef(false)
+  const subscriptionDisposerRef = useRef<Function>()
 
   if (!promiseRef.current && !isInitialRef.current) {
     let fetcher = requestManager.getFetcher(key)
@@ -71,20 +72,29 @@ export function useSWR<Key extends SWRKey, RR = any>(
       }))
     })
 
-    subscription.on(serializeKey(key), (event: ISubscriptionEmit) => {
-      const { data, status, lastUpdatedAt } = event
+    subscriptionDisposerRef.current = subscription.on(
+      serializeKey(key),
+      (event: ISubscriptionEmit) => {
+        const { data, status, lastUpdatedAt } = event
 
-      setSafeState((state) => ({
-        ...state,
-        data,
-        status,
-      }))
+        setSafeState((state) => ({
+          ...state,
+          data,
+          status,
+        }))
 
-      lastUpdateAtRef.current = lastUpdatedAt
-    })
+        lastUpdateAtRef.current = lastUpdatedAt
+      },
+    )
   }
 
   isInitialRef.current = true
+
+  useEffect(() => {
+    return () => {
+      subscriptionDisposerRef.current?.()
+    }
+  }, [])
 
   const { data, status } = state
   return {
