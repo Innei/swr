@@ -4,10 +4,7 @@ body {
     Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.hello {
-  padding: 0;
-
-  .nest {
-    bottom: 0;
-  }
+.flex {
+  display: flex;
+  gap: 4px;
 }

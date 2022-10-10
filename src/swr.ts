@@ -9,7 +9,7 @@ import type { FetcherFnParams, SWRKey } from './types.js'
 
 type Disposer = () => void
 
-type Wrapper<T> = T & {
+export type SWRWrapper<T> = T & {
   refresh: (force?: boolean) => Promise<T>
   subscribe: (callback: (value: T) => void) => Disposer
 }
@@ -18,7 +18,7 @@ export function swr<
   Key extends SWRKey,
   RR = any,
   Result = Promise<RR>,
-  ReuseablePromise = Wrapper<Result>,
+  ReuseablePromise = SWRWrapper<Result>,
 >(
   key: Key,
   fetchFn: (options: FetcherFnParams<Key>) => RR | Promise<RR>,

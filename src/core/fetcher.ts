@@ -1,3 +1,5 @@
+import { clear } from 'console'
+
 import { SWRError } from '~/_internal/utils/error.js'
 import { cloneDeep, sleep } from '~/_internal/utils/helper.js'
 import { serializeKey } from '~/_internal/utils/serialize.js'
@@ -82,7 +84,16 @@ export class Fetcher {
 
       // FIXME
 
-      const { retryInterval, retryMaxCount, initialData } = this.options
+      const {
+        retryInterval,
+        retryMaxCount,
+        initialData,
+        onError,
+        onErrorRetry,
+        onSuccess,
+        onLoadingSlow,
+        loadingTimeout,
+      } = this.options
       this.emitResponse('loading', this.state.data ?? initialData)
 
       let currentRetryCount = 0
@@ -90,17 +101,33 @@ export class Fetcher {
       const asyncFunction = () =>
         Promise.resolve().then(() => memoizedFetchFn())
 
+      let loadingTimer: ReturnType<typeof setTimeout> | null = null
+
       while (currentRetryCount++ < retryMaxCount) {
         try {
-          return await asyncFunction().then(this.handleResponse)
+          if (onLoadingSlow) {
+            loadingTimer = setTimeout(() => {
+              onLoadingSlow(this.key, this.options)
+            }, loadingTimeout)
+          }
+          return await asyncFunction()
+            .then(this.handleResponse)
+            .then((data) => {
+              onSuccess(data, this.key, data, this.options)
+              // @ts-ignore
+              loadingTimer = clearTimeout(loadingTimer!)
+              return data
+            })
         } catch (error) {
           if (currentRetryCount === retryMaxCount) {
             this.isFetching = false
             this.emitResponse('error', null, error)
+            onErrorRetry(this.key, error, this.options)
             throw error
           }
           Logger.warn(`retrying... ${currentRetryCount}`)
 
+          onError(this.key, error, this.options)
           await sleep(retryInterval)
         }
       }

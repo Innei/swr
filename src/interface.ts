@@ -1,3 +1,5 @@
+import { SWRKey } from './types.js'
+
 type JSONString = string
 
 export interface ICache {
@@ -15,8 +17,18 @@ export interface SWROptions {
 
   retryInterval: number
   retryMaxCount: number
+  loadingTimeout: number
 
   initialData: any
+
+  // events
+  onLoadingSlow: (key: SWRKey, config: SWROptions) => void
+  onSuccess: (newData: any, key: SWRKey, data: any, config: SWROptions) => void
+  onError: (key: SWRKey, error: any, config: SWROptions) => void
+  onErrorRetry: (key: SWRKey, error: any, config: SWROptions) => void
+
+  // providers
+  // compare: (a: any, b: any) => boolean
 }
 
 export type FetcherStatus = 'success' | 'error' | 'loading'

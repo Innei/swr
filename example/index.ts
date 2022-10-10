@@ -1,4 +1,7 @@
 import React from 'react'
+
+import './index.css'
+
 import ReactDom from 'react-dom'
 
 import { swr } from '~/swr'
@@ -48,7 +51,7 @@ async function main() {
   // ).then((res) => {
   //   console.log('1 done', res)
   // })
-  //
+
   // swr(['test'], () => {
   //   console.log('call 2')
   //
@@ -143,6 +146,9 @@ async function main() {
     },
     {
       initialData: 'has-inital',
+      onSuccess: (data) => {
+        console.log('onSuccess', data)
+      },
     },
   )
 
