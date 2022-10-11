@@ -2,7 +2,7 @@ import React from 'react'
 
 import './index.css'
 
-import ReactDom from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { swr } from '~/swr'
 
@@ -51,7 +51,6 @@ async function main() {
   // ).then((res) => {
   //   console.log('1 done', res)
   // })
-
   // swr(['test'], () => {
   //   console.log('call 2')
   //
@@ -138,29 +137,27 @@ async function main() {
   //   console.log('refresh 2')
   //   task3.refresh()
   // }, 200)
-
-  const task4 = swr(
-    ['test4'],
-    ({ key }) => {
-      return { message: 'task-4' }
-    },
-    {
-      initialData: 'has-inital',
-      onSuccess: (data) => {
-        console.log('onSuccess', data)
-      },
-    },
-  )
-
-  task4.subscribe((res) => {
-    console.log('4: subscribe', res)
-  })
-  task4.then((res) => {
-    console.log('task4 resolve: ', res)
-  })
+  // const task4 = swr(
+  //   ['test4'],
+  //   ({ key }) => {
+  //     return { message: 'task-4' }
+  //   },
+  //   {
+  //     initialData: 'has-inital',
+  //     onSuccess: (data) => {
+  //       console.log('onSuccess', data)
+  //     },
+  //   },
+  // )
+  // task4.subscribe((res) => {
+  //   console.log('4: subscribe', res)
+  // })
+  // task4.then((res) => {
+  //   console.log('task4 resolve: ', res)
+  // })
 }
 
 main()
 const $App = document.getElementById('app')!
 
-ReactDom.render(React.createElement(App), $App)
+createRoot($App).render(React.createElement(App))

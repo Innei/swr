@@ -22,5 +22,9 @@ export const XSTest1 = () => {
       console.log('xs 1 done', res)
     })
   }
-  return <button onClick={handleClick}>Test2</button>
+  return (
+    <button className="btn" onClick={handleClick}>
+      Test2
+    </button>
+  )
 }

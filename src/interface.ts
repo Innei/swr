@@ -18,7 +18,7 @@ export interface SWROptions<
   // cache
   cache: ICache
   /**
-   * response cache time
+   * response cache time (ms)
    */
   maxAge: number
 
@@ -39,12 +39,14 @@ export interface SWROptions<
   /**
    * this event will be triggered when after refresh, should return a new Promise
    */
-  onRefresh: <T, PromisePlugin = {}>(
-    promise: SWRWrapper<T> & PromisePlugin,
-    result: T,
-    key: SWRKey,
-    config: SWROptions,
-  ) => Promise<T>
+  onRefresh:
+    | (<T, PromisePlugin = {}>(
+        promise: SWRWrapper<T> & PromisePlugin,
+        result: T,
+        key: SWRKey,
+        config: SWROptions,
+      ) => Promise<T>)
+    | undefined
 
   // providers
   // compare: (a: any, b: any) => boolean
@@ -54,7 +56,7 @@ export interface SWROptions<
   Promise: IPromise
 }
 
-type Disposer = () => void
+export type Disposer = () => void
 
 export type SWRWrapper<T> = Promise<Awaited<T>> & {
   /**

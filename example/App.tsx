@@ -1,10 +1,8 @@
+import { Test1, Test2 } from 'components/swr'
 import { XSTest1 } from 'components/xs'
 import type { FC } from 'react'
-import React, { useRef } from 'react'
-import type { SWRWrapper } from '~'
+import React from 'react'
 import { swr, useSWR } from '~'
-
-import { TrunkPromise } from '@xhs/trunk-promise'
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -41,69 +39,32 @@ const App: FC = () => {
   }
 
   return (
-    <div>
+    <div className="m-4">
       <h5>useSWR</h5>
       <div>{JSON.stringify(data)}</div>
 
-      <h5>SWR</h5>
-      <div className="flex">
-        <button onClick={handleClick}>
+      <h5 className="text-xl mt-4">SWR</h5>
+      <div className="flex gap-4">
+        <button className="btn" onClick={handleClick}>
           fetch data with 1s waiting and no cache
         </button>
-        <button onClick={handleClickCache}>
+        <button className="btn" onClick={handleClickCache}>
           fetch data with 1s waiting and 3s cache
         </button>
-
+      </div>
+      <div className="flex gap-4 my-4">
         <Test1 />
+        <Test2 />
       </div>
 
-      <div>
-        <h5>XS</h5>
+      <div className="mt-4">
+        <h5 className="text-xl">XS</h5>
         <div className="flex">
           <XSTest1 />
         </div>
       </div>
     </div>
   )
-}
-
-const Test1 = () => {
-  const swrRef = useRef<SWRWrapper<number>>()
-  const handleClick = () => {
-    // const date = Date.now()
-    if (swrRef.current) {
-      swrRef.current.refresh()
-
-      return
-    }
-    swrRef.current = swr(
-      ['test'],
-      async () => {
-        await sleep(500)
-        console.log('call 1')
-
-        return 1
-      },
-      {
-        maxAge: 50,
-        // @ts-ignore
-        Promise: TrunkPromise,
-        onRefresh(promise: any, result) {
-          return promise.doResolve(result)
-        },
-      },
-    )
-    // 1ms
-    // console.log(+new Date() - date, 'swr handle cost')
-
-    // fix: `then` should memoize the callback
-    swrRef.current.then((res) => {
-      // console.log(+new Date() - date, 'done cost')
-
-      console.log('1 done', res)
-    })
-  }
-  return <button onClick={handleClick}>Test1</button>
 }
 
 export default App

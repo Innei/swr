@@ -53,6 +53,7 @@ export class Fetcher {
     }>,
   ) {
     const { force = false } = options || {}
+
     if (this.isFetching && !force) {
       Logger.warn(
         'previous request still in fetching, this fetching will skip..',
@@ -66,20 +67,22 @@ export class Fetcher {
     this.isFetching = true
 
     const memoizedKeys = Array.isArray(this.key) ? [...this.key] : this.key
+    const PromiseConstructor = this.options.Promise || globalThis.Promise
+
     const memoizedFetchFn = this.fetchFn.bind(this, {
       key: memoizedKeys,
     })
-    const PromiseConstructor = this.options.Promise || globalThis.Promise
-
     const fetchingPooling = () => {
       return new PromiseConstructor(async (resolve, reject) => {
-        const hasCache = await this.getCache()
-        if (hasCache && !force) {
-          this.isFetching = false
-          Logger.debug('cache hit, this request will fetch from cache.')
+        if (!force) {
+          const hasCache = await this.getCache()
+          if (hasCache) {
+            this.isFetching = false
+            Logger.debug('cache hit, this request will fetch from cache.')
 
-          this.emitResponse('success', hasCache)
-          return hasCache
+            this.emitResponse('success', hasCache)
+            return resolve(hasCache)
+          }
         }
 
         // FIXME
@@ -125,8 +128,12 @@ export class Fetcher {
               await asyncFunction()
                 .then(this.handleResponse)
                 .then((data) => {
+                  this.isFetching = false
                   onSuccess(data, this.key, data, this.options)
+                  // console.log(data)
+
                   // @ts-ignore
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   loadingTimer = clearTimeout(loadingTimer!)
                   return data
                 }),
@@ -167,10 +174,10 @@ export class Fetcher {
   }
 
   private handleResponse = async (response: any) => {
-    await this.doCache(response)
+    this.doCache(response)
 
     const clonedResponse = cloneDeep(response)
-    this.isFetching = false
+
     this.state.data = clonedResponse
     this.state.lastUpdatedAt = +Date.now()
 
@@ -196,6 +203,13 @@ export class Fetcher {
     if (!cacheStr) {
       return null
     }
+    /**
+     * cached object structure:
+     * {
+     *  data: any,
+     *  __cache_expired__: number
+     * }
+     */
     const cacheObj = JSON.parse(cacheStr)
 
     if (Date.now() > cacheObj[CACHE_EXPIRED_KEY]) {

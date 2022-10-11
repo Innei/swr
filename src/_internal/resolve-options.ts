@@ -15,7 +15,7 @@ export const defaultOptions: SWROptions = {
   onSuccess: noop,
   onError: noop,
   onErrorRetry: noop,
-  onRefresh: (promise) => promise,
+  onRefresh: undefined,
 
   initialData: null,
 
