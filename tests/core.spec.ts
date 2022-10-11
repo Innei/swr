@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { configure, requestManger, swr } from '~'
 
+import { TrunkPromise } from '@xhs/trunk-promise'
+
 import { generateRandomKey } from './helper'
 
 describe('swr basically', () => {
@@ -62,6 +64,7 @@ describe('swr basically', () => {
 describe('swr with cache', () => {
   afterAll(() => {
     configure({})
+    vi.clearAllTimers()
   })
 
   beforeEach(() => {
@@ -154,6 +157,111 @@ describe('swr with cache', () => {
         count: 2,
       })
     }, 1000)
+
+    vi.advanceTimersToNextTimer()
+  })
+
+  it("should override global configurate's maxAge", async () => {
+    let count = 0
+    const task = swr(
+      generateRandomKey(),
+      async () => {
+        return {
+          count: count++,
+        }
+      },
+      {
+        maxAge: 0,
+      },
+    )
+
+    await task
+    setTimeout(() => {
+      expect(task.refresh()).resolves.toStrictEqual({
+        count: 1,
+      })
+    }, 10)
+
+    vi.advanceTimersToNextTimer()
+  })
+})
+
+describe('swr advantage use', () => {
+  afterEach(() => {
+    vi.clearAllTimers()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      now: 0,
+    })
+  })
+
+  it('should use custom PromiseConstructor', () => {
+    vi.useRealTimers()
+    return new Promise((resolve) => {
+      const thisKey = generateRandomKey()
+      const task = swr(
+        thisKey,
+        async () => {
+          return 1
+        },
+        {
+          Promise: TrunkPromise as any,
+          onRefresh: (promise: any, result) => {
+            return promise.doResolve(result)
+          },
+        },
+      )
+
+      const fn = vi.fn().mockImplementation((r) => r)
+
+      task
+        .then((r) => fn(r))
+        .then(() => {
+          expect(task)
+            .resolves.toEqual(1)
+            .then(() => {
+              expect(fn).toBeCalledTimes(1)
+              resolve(0)
+            })
+        })
+    })
+  })
+
+  // FIXME
+  it.skip('should re-run thenable callback', async () => {
+    let count1 = 0
+
+    const promise = new Promise((resolve) => {
+      resolve({
+        count: count1++,
+      })
+    })
+    const dummyRequestAndHandle = () => {
+      return promise.then((res) => {
+        return res
+      })
+    }
+    const task = swr(generateRandomKey(), dummyRequestAndHandle)
+    const fn = vi.fn().mockImplementation((r) => r)
+    promise.then(fn)
+
+    await expect(task).resolves.toEqual({
+      count: 0,
+    })
+
+    expect(fn).toBeCalledTimes(1)
+    fn.mockReset()
+
+    setTimeout(() => {
+      task.refresh(true).then((res) => {
+        setTimeout(() => {
+          expect(fn).toBeCalledTimes(1)
+        }, 100)
+        vi.advanceTimersToNextTimer()
+      })
+    }, 100)
 
     vi.advanceTimersToNextTimer()
   })

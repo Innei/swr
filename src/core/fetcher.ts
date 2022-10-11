@@ -1,3 +1,4 @@
+import { defineConfigurableField } from '~/_internal/define.js'
 import { SWRError } from '~/_internal/utils/error.js'
 import { cloneDeep, sleep } from '~/_internal/utils/helper.js'
 import { serializeKey } from '~/_internal/utils/serialize.js'
@@ -159,6 +160,18 @@ export class Fetcher {
 
     this.polling = fetchingPooling()
 
+    // function memoizedThenable() {}
+
+    // this.polling.then = (onfulfilled, onrejected) => {
+    //   onfulfilled = onfulfilled || ((data) => data)
+    //   onrejected = onrejected || ((error) => error)
+    //   return Promise.prototype.then.call(
+    //     this.polling,
+    //     onfulfilled,
+    //     onrejected,
+    //   ) as any
+    // }
+
     // console.log(this.polling)
 
     return this.polling
@@ -218,7 +231,7 @@ export class Fetcher {
 
     // make sure is object
     if (typeof cacheObj.data === 'object' && cacheObj.data) {
-      define(cacheObj.data, '$$cache', {
+      defineConfigurableField(cacheObj.data, '$$cache', {
         expired: cacheObj[CACHE_EXPIRED_KEY],
         isCache: true,
       })
@@ -226,12 +239,4 @@ export class Fetcher {
 
     return cacheObj.data
   }
-}
-
-function define(target: object, propertyKey: PropertyKey, propertyValue: any) {
-  return Reflect.defineProperty(target, propertyKey, {
-    value: propertyValue,
-    enumerable: false,
-    configurable: false,
-  })
 }

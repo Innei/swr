@@ -10,8 +10,6 @@ import typescript from '@rollup/plugin-typescript'
 
 const packageJson = require('./package.json')
 
-const umdName = packageJson.name
-
 const globals = {
   // @ts-ignore
   ...(packageJson?.dependencies || {}),
@@ -35,25 +33,6 @@ const config = [
     ],
 
     output: [
-      {
-        file: `${dir}/index.umd.js`,
-        format: 'umd',
-        sourcemap: true,
-        name: umdName,
-      },
-      {
-        file: `${dir}/index.umd.min.js`,
-        format: 'umd',
-        sourcemap: true,
-        name: umdName,
-        plugins: [terser()],
-      },
-      {
-        file: `${dir}/index.iife.min.js`,
-        format: 'iife',
-        name: umdName,
-        plugins: [terser()],
-      },
       {
         file: `${dir}/index.cjs`,
         format: 'cjs',

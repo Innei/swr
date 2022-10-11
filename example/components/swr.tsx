@@ -1,5 +1,7 @@
 import React, { useRef } from 'react'
 
+import { TrunkPromise } from '@xhs/trunk-promise'
+
 import { sleep } from '~/_internal/utils/helper'
 import type { SWRWrapper } from '~/interface'
 import { swr } from '~/swr'
