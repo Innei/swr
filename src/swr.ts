@@ -56,7 +56,8 @@ export function swr<
         }) as Result
 
         return onRefresh
-          ? onRefresh(promise as any, nextResult, key, nextOptions)
+          ? onRefresh(promise as any, nextResult, key, nextOptions) ??
+              nextResult
           : nextResult
       }
 

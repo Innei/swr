@@ -189,6 +189,8 @@ describe('swr with cache', () => {
 describe('swr advantage use', () => {
   afterEach(() => {
     vi.clearAllTimers()
+
+    configure({})
   })
 
   beforeEach(() => {
@@ -199,6 +201,7 @@ describe('swr advantage use', () => {
 
   it('should use custom PromiseConstructor', () => {
     vi.useRealTimers()
+
     return new Promise((resolve) => {
       const thisKey = generateRandomKey()
       const task = swr(
@@ -227,6 +230,44 @@ describe('swr advantage use', () => {
             })
         })
     })
+  })
+
+  it('configuration global custom promise', async () => {
+    vi.useRealTimers()
+
+    const fn2 = vi.fn()
+    configure({
+      Promise: TrunkPromise as any,
+      onRefresh: (promise: any, result) => {
+        fn2()
+
+        return promise.doResolve(result)
+      },
+    })
+    const fn = vi.fn().mockImplementation((r) => r)
+    const thisKey = generateRandomKey()
+    const task = swr(thisKey, async () => {
+      return 1
+    })
+
+    await task
+      .then((r) => {
+        return fn(r)
+      })
+      .then(() => {
+        return expect(task)
+          .resolves.toEqual(1)
+          .then(() => {
+            expect(fn).toBeCalledTimes(1)
+          })
+      })
+
+    await expect(task.refresh(true))
+      .resolves.toEqual(1)
+      .then(() => {
+        expect(fn2).toBeCalledTimes(1)
+        expect(fn).toBeCalledTimes(2)
+      })
   })
 
   // FIXME
