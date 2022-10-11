@@ -1,5 +1,3 @@
-import { clear } from 'console'
-
 import { SWRError } from '~/_internal/utils/error.js'
 import { cloneDeep, sleep } from '~/_internal/utils/helper.js'
 import { serializeKey } from '~/_internal/utils/serialize.js'
@@ -45,8 +43,8 @@ export class Fetcher {
     this.fetchFn = fetchFn
   }
 
-  setOptions = (options: Required<SWROptions>) => {
-    this.options = options
+  setOptions = (options: Partial<SWROptions>) => {
+    this.options = { ...this.options, ...options }
   }
 
   resolve(
@@ -68,74 +66,93 @@ export class Fetcher {
     this.isFetching = true
 
     const memoizedKeys = Array.isArray(this.key) ? [...this.key] : this.key
-
     const memoizedFetchFn = this.fetchFn.bind(this, {
       key: memoizedKeys,
     })
-    const fetchingPooling = async () => {
-      const hasCache = await this.getCache()
-      if (hasCache && !force) {
-        this.isFetching = false
-        Logger.debug('cache hit, this request will fetch from cache.')
+    const PromiseConstructor = this.options.Promise || globalThis.Promise
 
-        this.emitResponse('success', hasCache)
-        return hasCache
-      }
+    const fetchingPooling = () => {
+      return new PromiseConstructor(async (resolve, reject) => {
+        const hasCache = await this.getCache()
+        if (hasCache && !force) {
+          this.isFetching = false
+          Logger.debug('cache hit, this request will fetch from cache.')
 
-      // FIXME
-
-      const {
-        retryInterval,
-        retryMaxCount,
-        initialData,
-        onError,
-        onErrorRetry,
-        onSuccess,
-        onLoadingSlow,
-        loadingTimeout,
-      } = this.options
-      this.emitResponse('loading', this.state.data ?? initialData)
-
-      let currentRetryCount = 0
-
-      const asyncFunction = () =>
-        Promise.resolve().then(() => memoizedFetchFn())
-
-      let loadingTimer: ReturnType<typeof setTimeout> | null = null
-
-      while (currentRetryCount++ < retryMaxCount) {
-        try {
-          if (onLoadingSlow) {
-            loadingTimer = setTimeout(() => {
-              onLoadingSlow(this.key, this.options)
-            }, loadingTimeout)
-          }
-          return await asyncFunction()
-            .then(this.handleResponse)
-            .then((data) => {
-              onSuccess(data, this.key, data, this.options)
-              // @ts-ignore
-              loadingTimer = clearTimeout(loadingTimer!)
-              return data
-            })
-        } catch (error) {
-          if (currentRetryCount === retryMaxCount) {
-            this.isFetching = false
-            this.emitResponse('error', null, error)
-            onErrorRetry(this.key, error, this.options)
-            throw error
-          }
-          Logger.warn(`retrying... ${currentRetryCount}`)
-
-          onError(this.key, error, this.options)
-          await sleep(retryInterval)
+          this.emitResponse('success', hasCache)
+          return hasCache
         }
-      }
+
+        // FIXME
+
+        const {
+          retryInterval,
+          retryMaxCount,
+          initialData,
+          onError,
+          onErrorRetry,
+          onSuccess,
+          onLoadingSlow,
+          loadingTimeout,
+        } = this.options
+        this.emitResponse('loading', this.state.data ?? initialData)
+
+        let currentRetryCount = 0
+
+        const asyncFunction = () =>
+          Promise.resolve().then(() => memoizedFetchFn())
+
+        // const asyncFunction = () =>
+        //   new TrunkPromise(async (resolve, reject) => {
+        //     try {
+        //       const res = await memoizedFetchFn()
+        //       resolve(res)
+        //     } catch (er) {
+        //       reject(er)
+        //     }
+        //   })
+        //
+        let loadingTimer: ReturnType<typeof setTimeout> | null = null
+
+        while (currentRetryCount++ < retryMaxCount) {
+          try {
+            if (onLoadingSlow) {
+              loadingTimer = setTimeout(() => {
+                onLoadingSlow(this.key, this.options)
+              }, loadingTimeout)
+            }
+
+            return resolve(
+              await asyncFunction()
+                .then(this.handleResponse)
+                .then((data) => {
+                  onSuccess(data, this.key, data, this.options)
+                  // @ts-ignore
+                  loadingTimer = clearTimeout(loadingTimer!)
+                  return data
+                }),
+            )
+          } catch (error) {
+            if (currentRetryCount === retryMaxCount) {
+              this.isFetching = false
+              this.emitResponse('error', null, error)
+              onErrorRetry(this.key, error, this.options)
+              reject(error)
+              throw error
+            }
+            Logger.warn(`retrying... ${currentRetryCount}`)
+
+            onError(this.key, error, this.options)
+            await sleep(retryInterval)
+          }
+        }
+      })
     }
 
     Logger.debug('start fetch')
 
     this.polling = fetchingPooling()
+
+    // console.log(this.polling)
 
     return this.polling
   }

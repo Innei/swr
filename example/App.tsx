@@ -1,8 +1,9 @@
-import { FC, useRef } from 'react'
-import React from 'react'
+import type { FC } from 'react'
+import React, { useRef } from 'react'
+import type { SWRWrapper } from '~'
 import { swr, useSWR } from '~'
 
-import { SWRWrapper } from '~/swr'
+import { TrunkPromise } from '@xhs/trunk-promise'
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -59,7 +60,7 @@ const App: FC = () => {
 }
 
 const Test1 = () => {
-  const swrRef = useRef<SWRWrapper<any>>()
+  const swrRef = useRef<SWRWrapper<number>>()
   const handleClick = () => {
     if (swrRef.current) {
       swrRef.current.refresh()
@@ -76,6 +77,11 @@ const Test1 = () => {
       },
       {
         maxAge: 50,
+        // @ts-ignore
+        Promise: TrunkPromise,
+        onRefresh(promise: any, result) {
+          return promise.doResolve(result)
+        },
       },
     )
 

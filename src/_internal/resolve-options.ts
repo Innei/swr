@@ -15,10 +15,12 @@ export const defaultOptions: SWROptions = {
   onSuccess: noop,
   onError: noop,
   onErrorRetry: noop,
+  onRefresh: (promise) => promise,
 
   initialData: null,
 
   // compare: (a, b) => stableHash(a) === stableHash(b),
+  Promise,
 }
 
 export const resolveOptions = (

@@ -4,15 +4,9 @@ import { isDefined } from './_internal/utils/helper.js'
 import { serializeKey } from './_internal/utils/serialize.js'
 import { Fetcher } from './core/fetcher.js'
 import requestManger from './core/manger.js'
-import type { SWROptions } from './interface.js'
+import type { SWROptions, SWRWrapper } from './interface.js'
 import type { FetcherFnParams, SWRKey } from './types.js'
 
-type Disposer = () => void
-
-export type SWRWrapper<T> = T & {
-  refresh: (force?: boolean) => Promise<T>
-  subscribe: (callback: (value: T) => void) => Disposer
-}
 // TODO
 export function swr<
   Key extends SWRKey,
@@ -26,24 +20,22 @@ export function swr<
 ): ReuseablePromise {
   const promise: Result = (() => {
     const existFetcher = requestManger.getFetcher(key)
+    const nextOptions = resolveOptions(options)
 
     if (existFetcher) {
-      const nextOptions = resolveOptions(options)
-
       existFetcher.setOptions(nextOptions)
       existFetcher.setFetchFn(fetchFn as any)
       return existFetcher.resolve() as Result
     }
 
     const fetcher = new Fetcher(key)
-    const nextOptions = resolveOptions(options)
     // @ts-ignore
     fetcher.setFetchFn(fetchFn)
     fetcher.setOptions(nextOptions)
 
     requestManger.addFetcher(key, fetcher)
 
-    const { initialData } = nextOptions
+    const { initialData, Promise } = nextOptions
 
     return isDefined(initialData)
       ? (Promise.resolve(initialData).then((res) => {
@@ -57,9 +49,15 @@ export function swr<
     refresh(force?: boolean) {
       const fetcher = requestManger.getFetcher(key)
       if (fetcher) {
-        return fetcher.resolve({
+        const nextOptions = resolveOptions(options)
+        const { onRefresh } = nextOptions
+        const nextResult = fetcher.resolve({
           force,
         }) as Result
+
+        return onRefresh
+          ? onRefresh(promise as any, nextResult, key, nextOptions)
+          : nextResult
       }
 
       return promise
