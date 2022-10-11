@@ -17,12 +17,18 @@ export interface SWROptions<
 > {
   // cache
   cache: ICache
+  /**
+   * response cache time
+   */
   maxAge: number
 
   retryInterval: number
   retryMaxCount: number
   loadingTimeout: number
 
+  /**
+   * if request data not fetched, return this value
+   */
   initialData: any
 
   // events
@@ -30,6 +36,9 @@ export interface SWROptions<
   onSuccess: (newData: any, key: SWRKey, data: any, config: SWROptions) => void
   onError: (key: SWRKey, error: any, config: SWROptions) => void
   onErrorRetry: (key: SWRKey, error: any, config: SWROptions) => void
+  /**
+   * this event will be triggered when after refresh, should return a new Promise
+   */
   onRefresh: <T, PromisePlugin = {}>(
     promise: SWRWrapper<T> & PromisePlugin,
     result: T,
@@ -39,13 +48,22 @@ export interface SWROptions<
 
   // providers
   // compare: (a: any, b: any) => boolean
+  /**
+   * use a custom Promise
+   */
   Promise: IPromise
 }
 
 type Disposer = () => void
 
 export type SWRWrapper<T> = Promise<Awaited<T>> & {
+  /**
+   * refresh data, pass `force` to ignore cached data, force re-fetch
+   */
   refresh: (force?: boolean) => Promise<T>
+  /**
+   * subscribe data change
+   */
   subscribe: (callback: (value: T) => void) => Disposer
 }
 

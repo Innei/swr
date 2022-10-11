@@ -1,3 +1,4 @@
+import { XSTest1 } from 'components/xs'
 import type { FC } from 'react'
 import React, { useRef } from 'react'
 import type { SWRWrapper } from '~'
@@ -55,6 +56,13 @@ const App: FC = () => {
 
         <Test1 />
       </div>
+
+      <div>
+        <h5>XS</h5>
+        <div className="flex">
+          <XSTest1 />
+        </div>
+      </div>
     </div>
   )
 }
@@ -62,6 +70,7 @@ const App: FC = () => {
 const Test1 = () => {
   const swrRef = useRef<SWRWrapper<number>>()
   const handleClick = () => {
+    // const date = Date.now()
     if (swrRef.current) {
       swrRef.current.refresh()
 
@@ -84,18 +93,17 @@ const Test1 = () => {
         },
       },
     )
+    // 1ms
+    // console.log(+new Date() - date, 'swr handle cost')
 
     // fix: `then` should memoize the callback
     swrRef.current.then((res) => {
+      // console.log(+new Date() - date, 'done cost')
+
       console.log('1 done', res)
     })
   }
   return <button onClick={handleClick}>Test1</button>
-}
-
-const Test2 = () => {
-  const handleClick = () => {}
-  return <button onClick={handleClick}>Test2</button>
 }
 
 export default App
