@@ -4,7 +4,7 @@ import type { Disposer } from '~/interface.js'
 import type { SWRKey } from '../types.js'
 import type { Fetcher } from './fetcher.js'
 
-class RequestMangerStatic {
+class RequestManagerStatic {
   private fetchers: { [key: string]: Fetcher } = {}
 
   getFetcher(key: SWRKey): Fetcher {
@@ -32,6 +32,6 @@ class RequestMangerStatic {
   }
 }
 
-export const requestManger = new RequestMangerStatic()
+export const requestManger = new RequestManagerStatic()
 
 export default requestManger

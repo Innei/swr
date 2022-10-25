@@ -4,7 +4,7 @@ import { resolveOptions } from './_internal/resolve-options.js'
 import { subscription } from './_internal/subscription.js'
 import { serializeKey } from './_internal/utils/serialize.js'
 import { Fetcher } from './core/fetcher.js'
-import requestManager from './core/manger.js'
+import requestManager from './core/manager.js'
 import { useSafeSetState } from './hooks/use-safe-setState.js'
 import type {
   FetcherStatus,

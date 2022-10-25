@@ -3,7 +3,7 @@ import { subscription } from './_internal/subscription.js'
 import { isDefined } from './_internal/utils/helper.js'
 import { serializeKey } from './_internal/utils/serialize.js'
 import { Fetcher } from './core/fetcher.js'
-import requestManger from './core/manger.js'
+import requestManger from './core/manager.js'
 import type { SWROptions, SWRWrapper } from './interface.js'
 import type { FetcherFnParams, SWRKey } from './types.js'
 
