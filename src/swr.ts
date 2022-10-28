@@ -10,7 +10,7 @@ import type { FetcherFnParams, SWRKey } from './types.js'
 // TODO
 export function swr<
   Key extends SWRKey,
-  RR = any,
+  RR = object | number | string | boolean,
   Result = Promise<RR>,
   ReuseablePromise = SWRWrapper<Result>,
 >(
@@ -18,6 +18,8 @@ export function swr<
   fetchFn: (options: FetcherFnParams<Key>) => RR | Promise<RR>,
   options?: Partial<SWROptions>,
 ): ReuseablePromise {
+  typeof key === 'object' && key && Object.freeze(key)
+
   const promise: Result = (() => {
     const existFetcher = requestManger.getFetcher(key)
     const nextOptions = resolveOptions(options)

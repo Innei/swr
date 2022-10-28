@@ -73,7 +73,7 @@ export class Fetcher {
 
     this.isFetching = true
 
-    const memoizedKeys = Array.isArray(this.key) ? [...this.key] : this.key
+    const memoizedKeys = this.key
     const PromiseConstructor = this.options.Promise || globalThis.Promise
 
     const memoizedFetchFn = this.fetchFn.bind(this, {
@@ -199,8 +199,13 @@ export class Fetcher {
   }
 
   private handleResponse = async (response: any) => {
+    // if response if empty
+    if (typeof response === 'undefined') {
+      return
+    }
     this.doCache(response)
 
+    // TODO it is necessary ???
     const clonedResponse = cloneDeep(response)
 
     this.state.data = clonedResponse

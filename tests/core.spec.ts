@@ -59,6 +59,15 @@ describe('swr basically', () => {
     expect(task1).resolves.toEqual(0)
     expect(task2).resolves.toEqual(0)
   })
+
+  it('should get Key', async () => {
+    const key = [1, 2, 34]
+    await swr(key, ({ key: thisKey }) => {
+      expect(key === thisKey).toBeTruthy()
+
+      return {}
+    })
+  })
 })
 
 describe('swr with cache', () => {
