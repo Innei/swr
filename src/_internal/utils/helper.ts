@@ -24,3 +24,15 @@ export const isFunction = <
 >(
   v: unknown,
 ): v is T => typeof v == 'function'
+
+export const isAsyncFunction = (func: any) => {
+  return func instanceof Function && func.constructor.name === 'AsyncFunction'
+}
+
+export const isPromise = (promise: any): promise is Promise<any> => {
+  return (
+    typeof promise === 'function' &&
+    promise.then instanceof Function &&
+    promise.catch instanceof Function
+  )
+}

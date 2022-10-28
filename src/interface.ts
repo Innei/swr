@@ -1,3 +1,5 @@
+import type { an } from 'vitest/dist/global-ea084c9f.js'
+
 import type { SWRKey } from './types.js'
 
 type JSONString = string
@@ -76,4 +78,8 @@ export interface ISubscriptionEmit {
   lastUpdatedAt: number
   status: FetcherStatus
   error?: any
+}
+
+export interface ICachedData<T = an> {
+  data: T
 }

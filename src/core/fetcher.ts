@@ -1,6 +1,11 @@
 import { defineConfigurableField } from '~/_internal/define.js'
 import { SWRError } from '~/_internal/utils/error.js'
-import { cloneDeep, sleep } from '~/_internal/utils/helper.js'
+import {
+  cloneDeep,
+  isAsyncFunction,
+  isPromise,
+  sleep,
+} from '~/_internal/utils/helper.js'
 import { serializeKey } from '~/_internal/utils/serialize.js'
 
 import { Logger } from '../_internal/logger.js'
@@ -8,6 +13,7 @@ import { defaultOptions } from '../_internal/resolve-options.js'
 import { subscription } from '../_internal/subscription.js'
 import type {
   FetcherStatus,
+  ICachedData,
   ISubscriptionEmit,
   SWROptions,
 } from '../interface.js'
@@ -76,13 +82,19 @@ export class Fetcher {
     const fetchingPooling = () => {
       return new PromiseConstructor(async (resolve, reject) => {
         if (!force) {
-          const hasCache = await this.getCache()
+          const hasCache = this.getCache()
+          let nextCache = hasCache
+
           if (hasCache) {
+            const isCacheIsPromise = isPromise(hasCache)
+            if (isCacheIsPromise) {
+              nextCache = await hasCache
+            }
             this.isFetching = false
             Logger.debug('cache hit, this request will fetch from cache.')
 
-            this.emitResponse('success', hasCache)
-            return resolve(hasCache)
+            this.emitResponse('success', nextCache)
+            return resolve(nextCache)
           }
         }
 
@@ -210,9 +222,31 @@ export class Fetcher {
     )
   }
 
-  private getCache = async () => {
+  private getCache = () => {
     const { cache } = this.options
+
+    const getIsAsync = isAsyncFunction(cache.get)
+
+    return getIsAsync ? this.getCacheAsync() : this.getCacheSync()
+  }
+  private getCacheAsync = async () => {
+    const { cache } = this.options
+
+    // avoid context interrupt
     const cacheStr = await cache.get(serializeKey(this.key))
+
+    return this.getCacheDataFromString(cacheStr) as ICachedData | null
+  }
+
+  private getCacheSync = () => {
+    const { cache } = this.options
+
+    const cacheStr = cache.get(serializeKey(this.key))
+
+    return this.getCacheDataFromString(cacheStr) as ICachedData | null
+  }
+
+  private getCacheDataFromString = (cacheStr: string) => {
     if (!cacheStr) {
       return null
     }
