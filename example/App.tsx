@@ -1,5 +1,7 @@
+import { QueryTest1 } from 'components/query'
 import { Test1, Test2 } from 'components/swr'
 import { XSTest1 } from 'components/xs'
+import { withQuery } from 'query'
 import type { FC } from 'react'
 import React from 'react'
 import { swr, useSWR } from '~'
@@ -63,8 +65,15 @@ const App: FC = () => {
           <XSTest1 />
         </div>
       </div>
+
+      <div className="mt-4">
+        <h5 className="text-xl">React Query</h5>
+        <div className="flex">
+          <QueryTest1 />
+        </div>
+      </div>
     </div>
   )
 }
 
-export default App
+export default withQuery(App)

@@ -117,16 +117,6 @@ export class Fetcher {
         const asyncFunction = () =>
           Promise.resolve().then(() => memoizedFetchFn())
 
-        // const asyncFunction = () =>
-        //   new TrunkPromise(async (resolve, reject) => {
-        //     try {
-        //       const res = await memoizedFetchFn()
-        //       resolve(res)
-        //     } catch (er) {
-        //       reject(er)
-        //     }
-        //   })
-        //
         let loadingTimer: ReturnType<typeof setTimeout> | null = null
 
         while (currentRetryCount++ < retryMaxCount) {
@@ -143,7 +133,6 @@ export class Fetcher {
                 .then((data) => {
                   this.isFetching = false
                   onSuccess(data, this.key, data, this.options)
-                  // console.log(data)
 
                   // @ts-ignore
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -171,20 +160,6 @@ export class Fetcher {
     Logger.debug('start fetch')
 
     this.polling = fetchingPooling()
-
-    // function memoizedThenable() {}
-
-    // this.polling.then = (onfulfilled, onrejected) => {
-    //   onfulfilled = onfulfilled || ((data) => data)
-    //   onrejected = onrejected || ((error) => error)
-    //   return Promise.prototype.then.call(
-    //     this.polling,
-    //     onfulfilled,
-    //     onrejected,
-    //   ) as any
-    // }
-
-    // console.log(this.polling)
 
     return this.polling
   }
