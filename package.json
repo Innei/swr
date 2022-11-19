@@ -1,7 +1,7 @@
 {
-  "name": "swr-vanilla",
+  "name": "@innei/swr",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "TODO",
   "author": "Innei",
   "license": "MIT",
@@ -71,8 +71,6 @@
     "@types/node": "18.7.16",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
-    "@xhs/trunk-promise": "http://npm.devops.xiaohongshu.com:7001/@xhs/trunk-promise/download/@xhs/trunk-promise-1.1.0.tgz",
-    "@xhs/xswr": "http://npm.devops.xiaohongshu.com:7001/@xhs/xswr/download/@xhs/xswr-0.0.11.tgz",
     "daisyui": "^2.31.0",
     "esbuild": "0.15.8",
     "gh-pages": "4.0.0",

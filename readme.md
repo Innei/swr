@@ -1,82 +1,13 @@
-# Rollup Typescript library template
+# SWR Vanilla
 
-A simple TypeScript library template. Quick to start dev, build a Pure TypeScript or React Component library.
+Status: Alpha
 
-Please use pnpm do this.
-
-```sh
-pnpm i
-```
-
-# Usage
-
-### Package
-
-Bundle your source code via tsc, rollup.
-
-```
-npm run package
-```
-
-### Dev
-
-Start dev mode by Vite.
-
-```
-npm run dev
-```
-
-### Deploy
-
-Deploy example to GitHub Pages.
-
-```
-npm run deploy
-npm run publish
-```
-
-# Additional
-
-## ESBuild & React
-
-If you want to bundle React JSX with rollup. Add additional packages.
-
-```
-pnpm i -D rollup-plugin-esbuild
-```
-
-And, un-comment this in `rollup.config.ts`.
+## How to use
 
 ```ts
-esbuild({
-  include: /\.[jt]sx?$/,
-  exclude: /node_modules/,
-  sourceMap: false,
-  minify: process.env.NODE_ENV === 'production',
-  target: 'es2017',
-  jsxFactory: 'React.createElement',
-  jsxFragment: 'React.Fragment',
-  define: {
-    __VERSION__: '"x.y.z"',
-  },
-  tsconfig: './src/tsconfig.json',
-  loaders: {
-    '.json': 'json',
-    '.js': 'jsx',
-  },
-}),
-```
+import { swr } from '@innei/swr'
 
-## PostCSS & CSS Module
 
-Enable default now.
-
-Nest selector is supported too.
-
-To build css extract a file not bundle into js, un-comment this.
-
-```ts
-css({
-  extract: true,
-})
+const query = swr(key, options)
+const result = await query
 ```

@@ -1,6 +1,5 @@
 import { QueryTest1 } from 'components/query'
 import { Test1, Test2 } from 'components/swr'
-import { XSTest1 } from 'components/xs'
 import { withQuery } from 'query'
 import type { FC } from 'react'
 import React from 'react'
@@ -57,13 +56,6 @@ const App: FC = () => {
       <div className="flex gap-4 my-4">
         <Test1 />
         <Test2 />
-      </div>
-
-      <div className="mt-4">
-        <h5 className="text-xl">XS</h5>
-        <div className="flex">
-          <XSTest1 />
-        </div>
       </div>
 
       <div className="mt-4">
