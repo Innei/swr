@@ -1,7 +1,6 @@
 {
   "name": "@innei/swr",
-  "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TODO",
   "author": "Innei",
   "license": "MIT",
